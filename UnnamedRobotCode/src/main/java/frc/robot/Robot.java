@@ -7,6 +7,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Commands.AutoDriveBackwards;
+import frc.robot.Subsystems.TankDriveSubsystem;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -22,38 +24,12 @@ import edu.wpi.first.wpilibj.motorcontrol.Spark;
 public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
-  private String m_autoSelected;
+  private TankDriveSubsystem m_drive;
+  private XboxController m_controller;
+  
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-// If the robot has more than one motor on each side (which it likely will), the motors have to be described in the code and then grouped.
-  //There's gonna be a bunch of errors here because some of this either isn't imported or doesn't match what it'll actually be named. This is just a guide until we get the specifics down.
-  // https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/motorcontrol/package-summary.html
 
-  //To use a PWN Motor on its own, you simply create it as an object with the port as the constructor input.
-  Spark EXAMPLE = new Spark(5);
-  //spark.set(-0.75); is how you set the motor to move in teleop, between 1 and -1 as a percentage.
-
-  //Left side group
-  Spark m_frontLeft = new Spark(1);
-  Spark m_rearLeft = new Spark(2);
-  MotorControllerGroup m_left = new MotorControllerGroup(m_frontLeft, m_rearLeft);
-
-  //Right side group
-  Spark m_frontRight = new Spark(3);
-  Spark m_rearRight = new Spark(4);
-  MotorControllerGroup m_right = new MotorControllerGroup(m_frontRight, m_rearRight);
-
-  //Differential Drive connects the left side group and right side group defined above. It's the main class used for drivetrains that *aren't* Mecanum.
-  //More info: https:  //docs.wpilib.org/en/stable/docs/software/hardware-apis/motors/wpi-drive-classes.html#multi-motor-differentialdrive-with-motorcontrollergroups
-  //Docs: https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/drive/DifferentialDrive.html
-  DifferentialDrive m_drive = new DifferentialDrive(m_left, m_right);
-  
-  //The class here depends on the exact type of controller we're using.
-  // More info: https://docs.wpilib.org/en/stable/docs/software/basic-programming/joystick.html
-  // Docs: https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/XboxController.html
-  private final XboxController m_controller = new XboxController(0);
-
-  private final Timer m_timer = new Timer();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -64,7 +40,32 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
-    m_right.setInverted(true);
+
+    // If the robot has more than one motor on each side (which it likely will), the motors have to be described in the code and then grouped.
+    //There's gonna be a bunch of errors here because some of this either isn't imported or doesn't match what it'll actually be named. This is just a guide until we get the specifics down.
+    // https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/motorcontrol/package-summary.html
+
+    //To use a PWN Motor on its own, you simply create it as an object with the port as the constructor input.
+    Spark EXAMPLE = new Spark(5);
+    //spark.set(-0.75); is how you set the motor to move in teleop, between 1 and -1 as a percentage.
+
+    //Left side 
+    Spark m_frontLeft = new Spark(2);
+    Spark m_rearLeft = new Spark(1);
+
+    //Right side
+    Spark m_frontRight = new Spark(4);
+    Spark m_rearRight = new Spark(3);
+
+    //Differential Drive connects the left side group and right side group defined above. It's the main class used for drivetrains that *aren't* Mecanum.
+    //More info: https:  //docs.wpilib.org/en/stable/docs/software/hardware-apis/motors/wpi-drive-classes.html#multi-motor-differentialdrive-with-motorcontrollergroups
+    //Docs: https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/drive/DifferentialDrive.html
+    m_drive = new TankDriveSubsystem(m_frontLeft, m_rearLeft, m_frontRight, m_rearRight);
+    
+    //The class here depends on the exact type of controller we're using.
+    // More info: https://docs.wpilib.org/en/stable/docs/software/basic-programming/joystick.html
+    // Docs: https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/XboxController.html
+    m_controller = new XboxController(0);
   }
 
   /**
@@ -89,25 +90,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-    System.out.println("Auto selected: " + m_autoSelected);
-
-    m_timer.reset();
-    m_timer.start();
+    AutoDriveBackwards command = new AutoDriveBackwards();
+    command.schedule();
   }
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {
-    // Drive for 2 seconds
-    if (m_timer.get() < 2.0) {
-      // Drive forwards half speed, make sure to turn input squaring off
-      m_drive.arcadeDrive(0.5, 0.0, false);
-    } else {
-      m_drive.stopMotor(); // stop robot
-    }
-  }
+  public void autonomousPeriodic() {}
 
   /** This function is called once when teleop is enabled. */
   @Override
@@ -117,7 +106,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     // Arcade drive with a given forward and turn rate
-    m_drive.arcadeDrive(m_controller.getLeftY(), m_controller.getLeftX());
+    m_drive.drive(m_controller.getRightY() * 0.8, m_controller.getLeftY() * 0.8);
   }
 
   /** This function is called once when the robot is disabled. */
