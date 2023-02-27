@@ -7,7 +7,11 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Commands.AutoDriveBackwards;
+import frc.robot.Commands.MoveArm;
+import frc.robot.Commands.MoveClaw;
 import frc.robot.Subsystems.TankDriveSubsystem;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
@@ -44,9 +48,6 @@ public class Robot extends TimedRobot {
     // If the robot has more than one motor on each side (which it likely will), the motors have to be described in the code and then grouped.
     //There's gonna be a bunch of errors here because some of this either isn't imported or doesn't match what it'll actually be named. This is just a guide until we get the specifics down.
     // https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/motorcontrol/package-summary.html
-
-    //To use a PWN Motor on its own, you simply create it as an object with the port as the constructor input.
-    Spark EXAMPLE = new Spark(5);
     //spark.set(-0.75); is how you set the motor to move in teleop, between 1 and -1 as a percentage.
 
     //Left side 
@@ -61,11 +62,21 @@ public class Robot extends TimedRobot {
     //More info: https:  //docs.wpilib.org/en/stable/docs/software/hardware-apis/motors/wpi-drive-classes.html#multi-motor-differentialdrive-with-motorcontrollergroups
     //Docs: https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/drive/DifferentialDrive.html
     m_drive = new TankDriveSubsystem(m_frontLeft, m_rearLeft, m_frontRight, m_rearRight);
+
+    //These are apparently gonna be redline motors, which need to have the voltage regulated so they don't burn out.
+    Spark m_arm = new Spark(5);
+    Spark m_claw = new Spark(6);
     
     //The class here depends on the exact type of controller we're using.
     // More info: https://docs.wpilib.org/en/stable/docs/software/basic-programming/joystick.html
     // Docs: https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/XboxController.html
     m_controller = new XboxController(0);
+    Trigger aButton = new JoystickButton(m_controller, XboxController.Button.kA.value).whileTrue(new MoveArm(0.5));
+    Trigger bButton = new JoystickButton(m_controller, XboxController.Button.kB.value).whileTrue(new MoveArm(-0.5));
+
+    Trigger xButton = new JoystickButton(m_controller, XboxController.Button.kX.value).whileTrue(new MoveClaw(0.5));
+    Trigger yButton = new JoystickButton(m_controller, XboxController.Button.kY.value).whileTrue(new MoveClaw(-0.5));
+
   }
 
   /**
@@ -97,7 +108,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {}
-
+  
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {}
@@ -105,7 +116,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    // Arcade drive with a given forward and turn rate
+    // Tank drive with the right side and the left side. Multiply by decimals to limit speed.
     m_drive.drive(m_controller.getRightY() * 0.8, m_controller.getLeftY() * 0.8);
   }
 
