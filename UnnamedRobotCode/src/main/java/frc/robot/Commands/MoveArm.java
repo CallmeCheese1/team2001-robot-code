@@ -9,6 +9,8 @@ public class MoveArm extends CommandBase{
 
     public MoveArm(double Direction) {
         addRequirements(ClawArmSubsystem.getInstance());
+        this.Direction = Direction;
+        System.out.println(Direction);
     }
 
     @Override

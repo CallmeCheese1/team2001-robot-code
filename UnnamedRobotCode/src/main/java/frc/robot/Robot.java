@@ -7,14 +7,18 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Commands.AutoDriveBackwards;
 import frc.robot.Commands.MoveArm;
 import frc.robot.Commands.MoveClaw;
+import frc.robot.Subsystems.ClawArmSubsystem;
 import frc.robot.Subsystems.TankDriveSubsystem;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
@@ -29,7 +33,13 @@ public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
   private TankDriveSubsystem m_drive;
+  private ClawArmSubsystem m_clawarm;
   private XboxController m_controller;
+
+  private Trigger aButton;
+  private Trigger bButton;
+  private Trigger xButton;
+  private Trigger yButton;
   
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
@@ -66,17 +76,25 @@ public class Robot extends TimedRobot {
     //These are apparently gonna be redline motors, which need to have the voltage regulated so they don't burn out.
     Spark m_arm = new Spark(5);
     Spark m_claw = new Spark(6);
+
+    m_clawarm = new ClawArmSubsystem(m_arm, m_claw);
     
     //The class here depends on the exact type of controller we're using.
-    // More info: https://docs.wpilib.org/en/stable/docs/software/basic-programming/joystick.html
+    // More  info: https://docs.wpilib.org/en/stable/docs/software/basic-programming/joystick.html
     // Docs: https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/XboxController.html
     m_controller = new XboxController(0);
-    Trigger aButton = new JoystickButton(m_controller, XboxController.Button.kA.value).whileTrue(new MoveArm(0.5));
-    Trigger bButton = new JoystickButton(m_controller, XboxController.Button.kB.value).whileTrue(new MoveArm(-0.5));
 
-    Trigger xButton = new JoystickButton(m_controller, XboxController.Button.kX.value).whileTrue(new MoveClaw(0.5));
-    Trigger yButton = new JoystickButton(m_controller, XboxController.Button.kY.value).whileTrue(new MoveClaw(-0.5));
+    aButton = new JoystickButton(m_controller, Button.kA.value);
+    aButton.whileTrue(new MoveArm(0.5));
 
+    bButton = new JoystickButton(m_controller, Button.kB.value);
+    bButton.whileTrue(new MoveArm(-0.5)); 
+
+    xButton = new JoystickButton(m_controller, Button.kX.value);
+    xButton.whileTrue(new MoveClaw(0.5));
+
+    yButton = new JoystickButton(m_controller, Button.kY.value);
+    yButton.whileTrue(new MoveClaw(-0.5));
   }
 
   /**
@@ -87,7 +105,9 @@ public class Robot extends TimedRobot {
    * SmartDashboard integrated updating.
    */
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+    CommandScheduler.getInstance().run();
+  }
 
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
@@ -117,7 +137,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     // Tank drive with the right side and the left side. Multiply by decimals to limit speed.
-    m_drive.drive(m_controller.getRightY() * 0.8, m_controller.getLeftY() * 0.8);
+    m_drive.drive(m_controller.getLeftY() * 0.3, m_controller.getRightY() * 0.3);
   }
 
   /** This function is called once when the robot is disabled. */

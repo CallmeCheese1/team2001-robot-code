@@ -9,6 +9,7 @@ public class MoveClaw extends CommandBase{
 
     public MoveClaw(double Direction) {
         addRequirements(ClawArmSubsystem.getInstance());
+        this.gripDirection = Direction;
     }
 
     @Override

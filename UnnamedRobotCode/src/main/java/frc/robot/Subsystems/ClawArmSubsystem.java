@@ -16,12 +16,10 @@ public class ClawArmSubsystem extends SubsystemBase {
     }
 
     public void armRotate(double direction){
-        //TODO: move the arm motor
         m_arm.set(direction);
     }
 
     public void grab(double gripDirection){
-        //TODO: move claw
         m_claw.set(gripDirection);
     }
 
