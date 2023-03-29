@@ -23,6 +23,10 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+
+import edu.wpi.first.wpilibj.CAN;
+
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
  * each mode, as described in the TimedRobot documentation. If you change the name of this class or
@@ -74,8 +78,8 @@ public class Robot extends TimedRobot {
     m_drive = new TankDriveSubsystem(m_frontLeft, m_rearLeft, m_frontRight, m_rearRight);
 
     //These are apparently gonna be redline motors, which need to have the voltage regulated so they don't burn out.
-    Spark m_arm = new Spark(5);
-    Spark m_claw = new Spark(6);
+    TalonSRX m_arm = new TalonSRX(0);
+    TalonSRX m_claw = new TalonSRX(1);
 
     m_clawarm = new ClawArmSubsystem(m_arm, m_claw);
     
