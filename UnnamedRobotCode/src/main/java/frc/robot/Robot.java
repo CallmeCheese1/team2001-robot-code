@@ -11,8 +11,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Commands.AutoDriveBackwards;
-import frc.robot.Commands.MoveArm;
+import frc.robot.Commands.AutoDriveForwards;
+import frc.robot.Commands.MoveArm; 
 import frc.robot.Commands.MoveClaw;
 import frc.robot.Subsystems.ClawArmSubsystem;
 import frc.robot.Subsystems.TankDriveSubsystem;
@@ -89,16 +89,16 @@ public class Robot extends TimedRobot {
     m_controller = new XboxController(0);
 
     aButton = new JoystickButton(m_controller, Button.kA.value);
-    aButton.whileTrue(new MoveArm(0.5));
+    aButton.whileTrue(new MoveArm(0.7));
 
     bButton = new JoystickButton(m_controller, Button.kB.value);
-    bButton.whileTrue(new MoveArm(-0.5)); 
+    bButton.whileTrue(new MoveArm(-0.7)); 
 
     xButton = new JoystickButton(m_controller, Button.kX.value);
-    xButton.whileTrue(new MoveClaw(0.5));
+    xButton.whileTrue(new MoveClaw(0.7));
 
     yButton = new JoystickButton(m_controller, Button.kY.value);
-    yButton.whileTrue(new MoveClaw(-0.5));
+    yButton.whileTrue(new MoveClaw(-0.7));
   }
 
   /**
@@ -125,10 +125,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    AutoDriveBackwards command = new AutoDriveBackwards();
+    AutoDriveForwards command = new AutoDriveForwards(m_drive);
     command.schedule();
   }
-
+ 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {}
@@ -141,7 +141,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     // Tank drive with the right side and the left side. Multiply by decimals to limit speed.
-    m_drive.drive(m_controller.getLeftY() * 0.3, m_controller.getRightY() * 0.3);
+    m_drive.drive(m_controller.getLeftY() * 0.7, m_controller.getRightY() * 0.7);
   }
 
   /** This function is called once when the robot is disabled. */

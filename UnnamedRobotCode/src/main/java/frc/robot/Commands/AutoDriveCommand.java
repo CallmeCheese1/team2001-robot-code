@@ -5,24 +5,35 @@ import frc.robot.Subsystems.TankDriveSubsystem;
 
 public class AutoDriveCommand extends CommandBase{
     private double leftSide, rightSide, seconds, start;
+    TankDriveSubsystem driveSubsystem;
 
-    public AutoDriveCommand(double leftSide, double rightSide, double seconds) {
-        addRequirements(TankDriveSubsystem.getInstance());
+    public AutoDriveCommand(TankDriveSubsystem drive, double leftSide, double rightSide, double seconds) {
+        addRequirements(drive);
+        driveSubsystem = drive;
+        this.leftSide = leftSide;
+        this.rightSide = rightSide;
+        this.seconds = seconds;
     }
 
     @Override
     public void initialize() {
         start = System.currentTimeMillis();
-        TankDriveSubsystem.getInstance().drive(leftSide, rightSide);
+        System.out.println("Auto --> init called: " + start + " start time -->");
+        System.out.println("Auto-> Left Side: " + leftSide + " Right Side: " + rightSide);    }
+    
+    @Override
+    public void execute() {
+        driveSubsystem.drive(leftSide, rightSide);
     }
 
     @Override
     public boolean isFinished() {
+        //System.out.println("Is Finished Called --> Auto");
         return (System.currentTimeMillis() - start) < seconds * 1000;
     }
 
     @Override
     public void end(boolean interrupted) {
-        TankDriveSubsystem.getInstance().drive(0, 0);
+        driveSubsystem.drive(0, 0);
     }
 }
