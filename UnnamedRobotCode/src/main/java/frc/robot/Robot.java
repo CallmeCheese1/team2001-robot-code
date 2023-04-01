@@ -8,10 +8,12 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Commands.AutoDriveForwards;
+import frc.robot.Commands.AutoScoreHigh;
 import frc.robot.Commands.MoveArm; 
 import frc.robot.Commands.MoveClaw;
 import frc.robot.Subsystems.ClawArmSubsystem;
@@ -22,9 +24,7 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
-
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-
 import edu.wpi.first.wpilibj.CAN;
 
 /**
@@ -44,6 +44,9 @@ public class Robot extends TimedRobot {
   private Trigger bButton;
   private Trigger xButton;
   private Trigger yButton;
+
+  private Trigger rightBumper;
+  private Trigger leftBumper;
   
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
@@ -78,8 +81,8 @@ public class Robot extends TimedRobot {
     m_drive = new TankDriveSubsystem(m_frontLeft, m_rearLeft, m_frontRight, m_rearRight);
 
     //These are apparently gonna be redline motors, which need to have the voltage regulated so they don't burn out.
-    TalonSRX m_arm = new TalonSRX(0);
-    TalonSRX m_claw = new TalonSRX(1);
+    TalonSRX m_arm = new TalonSRX(0); //ON THE ACTUAL ROBOT, ARM IS ID 0, IT'S ACTUALLY CONNECTED TO THE CLAW, AND IT NEEDS TO BE AT 70%
+    TalonSRX m_claw = new TalonSRX(1); //ON THE ACTUAL ROBOT, CLAW IS ID 1, IT'S CONNECTED TO THE ARM, AND IT NEEDS TO BE AT 30%
 
     m_clawarm = new ClawArmSubsystem(m_arm, m_claw);
     
@@ -89,16 +92,27 @@ public class Robot extends TimedRobot {
     m_controller = new XboxController(0);
 
     aButton = new JoystickButton(m_controller, Button.kA.value);
-    aButton.whileTrue(new MoveArm(0.7));
+    aButton.whileTrue(new MoveArm(0.65)); //See below comment. Despite what the variable is named, Arm actually controls the Claw.
 
     bButton = new JoystickButton(m_controller, Button.kB.value);
-    bButton.whileTrue(new MoveArm(-0.7)); 
+    bButton.whileTrue(new MoveArm(-0.65)); 
+
+    //rightTrigger = new Trigger(() -> (m_controller.getRightTriggerAxis() > 0.1));
+    //rightTrigger.whileTrue(new MoveClaw(m_controller::getRightTriggerAxis, false));
+
+   
+    //leftTrigger = new Trigger(() -> (m_controller.getLeftTriggerAxis() > 0.1));
+    //leftTrigger.whileTrue(new MoveClaw(m_controller::getLeftTriggerAxis, true));
+
+    //note: the directions are actually reversed, so ignore the names. What's said to control the Claw is actually wired to control the Arm, and the Arm needs to be at 30% speed.
+
+    leftBumper = new JoystickButton(m_controller, Button.kLeftBumper.value).whileTrue(new MoveClaw(0.3));
+    rightBumper = new JoystickButton(m_controller, Button.kLeftBumper.value).whileTrue(new MoveClaw(-0.3));
 
     xButton = new JoystickButton(m_controller, Button.kX.value);
-    xButton.whileTrue(new MoveClaw(0.7));
-
+    xButton.whileTrue(new MoveClaw(0.3));
     yButton = new JoystickButton(m_controller, Button.kY.value);
-    yButton.whileTrue(new MoveClaw(-0.7));
+    yButton.whileTrue(new MoveClaw(-0.3)); 
   }
 
   /**
@@ -125,8 +139,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    AutoDriveForwards command = new AutoDriveForwards(m_drive);
-    command.schedule();
+    //AutoDriveForwards command = new AutoDriveForwards(m_drive);
+    //command.schedule();
+    AutoScoreHigh score = new AutoScoreHigh(m_clawarm);
+    score.schedule();
   }
  
   /** This function is called periodically during autonomous. */
@@ -141,7 +157,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     // Tank drive with the right side and the left side. Multiply by decimals to limit speed.
-    m_drive.drive(m_controller.getLeftY() * 0.7, m_controller.getRightY() * 0.7);
+    m_drive.drive(m_controller.getLeftY() * 0.9, m_controller.getRightY() * 0.9);
   }
 
   /** This function is called once when the robot is disabled. */

@@ -9,7 +9,7 @@ public class AutoDriveCommand extends CommandBase{
 
     public AutoDriveCommand(TankDriveSubsystem drive, double leftSide, double rightSide, double seconds) {
         addRequirements(drive);
-        driveSubsystem = drive;
+        this.driveSubsystem = drive;
         this.leftSide = leftSide;
         this.rightSide = rightSide;
         this.seconds = seconds;
