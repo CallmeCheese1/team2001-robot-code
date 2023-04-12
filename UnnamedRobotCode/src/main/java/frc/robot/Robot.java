@@ -106,8 +106,8 @@ public class Robot extends TimedRobot {
 
     //note: the directions are actually reversed, so ignore the names. What's said to control the Claw is actually wired to control the Arm, and the Arm needs to be at 30% speed.
 
-    leftBumper = new JoystickButton(m_controller, Button.kLeftBumper.value).whileTrue(new MoveClaw(0.3));
-    rightBumper = new JoystickButton(m_controller, Button.kLeftBumper.value).whileTrue(new MoveClaw(-0.3));
+    leftBumper = new JoystickButton(m_controller, Button.kLeftBumper.value).whileTrue(new MoveClaw(0.4));
+    rightBumper = new JoystickButton(m_controller, Button.kLeftBumper.value).whileTrue(new MoveClaw(0.4 * -1));
 
     xButton = new JoystickButton(m_controller, Button.kX.value);
     xButton.whileTrue(new MoveClaw(0.3));
