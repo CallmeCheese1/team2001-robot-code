@@ -62,8 +62,6 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
-    // If the robot has more than one motor on each side (which it likely will), the motors have to be described in the code and then grouped.
-    //There's gonna be a bunch of errors here because some of this either isn't imported or doesn't match what it'll actually be named. This is just a guide until we get the specifics down.
     // https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/motorcontrol/package-summary.html
     //spark.set(-0.75); is how you set the motor to move in teleop, between 1 and -1 as a percentage.
 
@@ -75,37 +73,24 @@ public class Robot extends TimedRobot {
     Spark m_frontRight = new Spark(4);
     Spark m_rearRight = new Spark(3);
 
-    //Differential Drive connects the left side group and right side group defined above. It's the main class used for drivetrains that *aren't* Mecanum.
-    //More info: https:  //docs.wpilib.org/en/stable/docs/software/hardware-apis/motors/wpi-drive-classes.html#multi-motor-differentialdrive-with-motorcontrollergroups
-    //Docs: https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/drive/DifferentialDrive.html
+    //TankDriveSubsystem's defined in the file with the same name underneath the Subsystems folder. It wraps up everything that controls the tank drive in a nice box instead of having it all out here.
     m_drive = new TankDriveSubsystem(m_frontLeft, m_rearLeft, m_frontRight, m_rearRight);
 
-    //These are apparently gonna be redline motors, which need to have the voltage regulated so they don't burn out.
     TalonSRX m_arm = new TalonSRX(0); //ON THE ACTUAL ROBOT, ARM IS ID 0, IT'S ACTUALLY CONNECTED TO THE CLAW, AND IT NEEDS TO BE AT 70%
     TalonSRX m_claw = new TalonSRX(1); //ON THE ACTUAL ROBOT, CLAW IS ID 1, IT'S CONNECTED TO THE ARM, AND IT NEEDS TO BE AT 30%
 
     m_clawarm = new ClawArmSubsystem(m_arm, m_claw);
-    
-    //The class here depends on the exact type of controller we're using.
-    // More  info: https://docs.wpilib.org/en/stable/docs/software/basic-programming/joystick.html
-    // Docs: https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/XboxController.html
+
     m_controller = new XboxController(0);
 
+    //Somehow, once we finished the robot, the directions ended up being reversed. In the code, what was set to control the arm actually controlled the claw. The speeds here are set with that in mind, as the arm moves at 30% speed and the intake moves at 65% speed.
     aButton = new JoystickButton(m_controller, Button.kA.value);
     aButton.whileTrue(new MoveArm(0.65)); //See below comment. Despite what the variable is named, Arm actually controls the Claw.
 
     bButton = new JoystickButton(m_controller, Button.kB.value);
     bButton.whileTrue(new MoveArm(-0.65)); 
 
-    //rightTrigger = new Trigger(() -> (m_controller.getRightTriggerAxis() > 0.1));
-    //rightTrigger.whileTrue(new MoveClaw(m_controller::getRightTriggerAxis, false));
-
-   
-    //leftTrigger = new Trigger(() -> (m_controller.getLeftTriggerAxis() > 0.1));
-    //leftTrigger.whileTrue(new MoveClaw(m_controller::getLeftTriggerAxis, true));
-
-    //note: the directions are actually reversed, so ignore the names. What's said to control the Claw is actually wired to control the Arm, and the Arm needs to be at 30% speed.
-
+    //This may not completely work. I didn't get a chance to completely test and debug bumper controls during competition.
     leftBumper = new JoystickButton(m_controller, Button.kLeftBumper.value).whileTrue(new MoveClaw(0.4));
     rightBumper = new JoystickButton(m_controller, Button.kLeftBumper.value).whileTrue(new MoveClaw(0.4 * -1));
 
@@ -124,6 +109,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    //Fun fact -- we spent an hour and a half debugging the code when nothing was working as we were trying to integrate command-based controls. It took us that long to realize we never told the CommandScheduler to run in the first place.
     CommandScheduler.getInstance().run();
   }
 
@@ -141,6 +127,8 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     //AutoDriveForwards command = new AutoDriveForwards(m_drive);
     //command.schedule();
+
+    //Because driving during autonomous wasn't working for reasons only the god of robotics knows, we instead created an autonomous for the robot to simply extend the arm and put down whatever it was holding.
     AutoScoreHigh score = new AutoScoreHigh(m_clawarm);
     score.schedule();
   }
